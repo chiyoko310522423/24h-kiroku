@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="24時間記録">
+<title>24時間連絡体制 記録</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{font-family:'Hiragino Sans','Noto Sans JP',sans-serif;background:#f0f4f8;min-height:100vh;padding-bottom:80px;}
+  button{font-family:inherit;cursor:pointer;}
+  input,select,textarea{font-family:inherit;}
+
+  /* ヘッダー */
+  .header{background:linear-gradient(135deg,#0a1628 0%,#0d3b7a 100%);color:#fff;padding:20px 16px 14px;border-radius:0 0 20px 20px;margin-bottom:14px;box-shadow:0 6px 28px rgba(13,59,122,.4);}
+  .header-title{font-size:18px;font-weight:900;letter-spacing:.3px;}
+  .header-sub{font-size:10px;opacity:.6;margin-top:2px;}
+  .header-label{font-size:10px;letter-spacing:3px;opacity:.55;margin-bottom:2px;}
+
+  /* 月ナビ */
+  .month-nav{display:flex;align-items:center;gap:10px;margin:10px 0;}
+  .month-nav span{font-size:17px;font-weight:900;min-width:100px;text-align:center;}
+  .nav-btn{background:rgba(255,255,255,.18);border:none;color:#fff;width:32px;height:32px;border-radius:10px;font-size:20px;display:flex;align-items:center;justify-content:center;}
+
+  /* 統計バッジ */
+  .stats{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+  .stat-badge{background:rgba(255,255,255,.12);border-radius:10px;padding:5px 12px;font-size:11px;}
+
+  /* タブ */
+  .tabs{display:flex;gap:8px;padding:0 14px;margin-bottom:14px;}
+  .tab-btn{flex:1;padding:9px 4px;border:none;border-radius:12px;font-weight:700;font-size:11px;transition:all .2s;}
+  .tab-btn.active{background:#0d3b7a;color:#fff;box-shadow:0 4px 14px rgba(13,59,122,.4);}
+  .tab-btn.inactive{background:#fff;color:#64748b;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+
+  /* 日別カード */
+  .day-card{background:#fff;border-radius:14px;margin-bottom:8px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.06);}
+  .day-card.no-call{border:1.5px solid #d1fae5;}
+  .day-card.has-call{border:1.5px solid #f59e0b;}
+  .day-card.unrecorded{border:1.5px solid #e2e8f0;}
+  .day-card.today{border:2px solid #0d3b7a;box-shadow:0 4px 20px rgba(13,59,122,.15);}
+
+  .day-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid #f1f5f9;cursor:pointer;}
+  .day-num{font-size:20px;font-weight:900;}
+  .day-num.sun{color:#dc2626;}
+  .day-num.sat{color:#2563eb;}
+  .day-num.normal{color:#1e293b;}
+  .day-num.today-num{color:#0d3b7a;}
+  .day-wd{font-size:11px;font-weight:700;margin-left:2px;}
+  .today-badge{font-size:9px;background:#0d3b7a;color:#fff;padding:1px 5px;border-radius:6px;font-weight:700;margin-left:4px;}
+
+  .call-btn{padding:4px 10px;border-radius:8px;border:none;font-size:11px;font-weight:700;transition:all .15s;}
+  .call-btn.none-active{background:#d1fae5;color:#059669;}
+  .call-btn.none-inactive{background:#f1f5f9;color:#94a3b8;}
+  .call-btn.yes-active{background:#fef3c7;color:#d97706;}
+  .call-btn.yes-inactive{background:#f1f5f9;color:#94a3b8;}
+
+  .duty-select{font-size:11px;border:1px solid #e2e8f0;border-radius:8px;padding:3px 6px;background:#f8fafc;color:#374151;outline:none;max-width:110px;}
+  .call-badge{background:#f59e0b;color:#fff;font-size:11px;font-weight:900;border-radius:20px;padding:2px 8px;}
+  .expand-arrow{color:#94a3b8;font-size:12px;}
+
+  /* 展開エリア */
+  .day-expand{padding:10px 14px;}
+  .rec-card{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 12px;margin-bottom:8px;}
+  .rec-time{font-size:15px;font-weight:900;color:#0a1628;}
+  .rec-staff{font-size:11px;background:#0d3b7a;color:#fff;padding:2px 8px;border-radius:12px;font-weight:700;}
+  .rec-label{font-weight:700;}
+  .rec-content-label{color:#92400e;}
+  .rec-response-label{color:#0d3b7a;}
+  .rec-memo{font-size:11px;color:#64748b;background:#f8fafc;border-radius:6px;padding:4px 8px;margin-top:4px;}
+  .rec-meta{font-size:9px;color:#94a3b8;margin-top:5px;}
+  .rec-actions{display:flex;gap:5px;margin-left:8px;flex-shrink:0;}
+  .btn-edit{font-size:11px;background:#eff6ff;color:#1d4ed8;border:none;border-radius:7px;padding:4px 8px;font-weight:700;}
+  .btn-del{font-size:11px;background:#fef2f2;color:#dc2626;border:none;border-radius:7px;padding:4px 8px;font-weight:700;}
+
+  .add-rec-btn{width:100%;padding:10px 0;background:linear-gradient(135deg,#0a1628,#0d3b7a);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:13px;margin-top:4px;}
+  .note-save-btn{width:100%;padding:9px 0;background:#059669;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:13px;margin-top:6px;cursor:pointer;}
+  .note-textarea{width:100%;height:60px;border:1px solid #e2e8f0;border-radius:8px;padding:8px;font-size:12px;resize:none;outline:none;margin-top:8px;color:#374151;}
+  .empty-msg{font-size:12px;color:#94a3b8;text-align:center;padding:8px 0;}
+
+  /* ターミナルタブ */
+  .terminal-header{background:linear-gradient(135deg,#0a1628,#0d3b7a);border-radius:16px;padding:14px 16px;margin-bottom:14px;color:#fff;}
+  .terminal-card{background:#fff;border-radius:14px;padding:13px 14px;margin-bottom:8px;box-shadow:0 1px 6px rgba(0,0,0,.06);}
+  .terminal-card.signed{border:1.5px solid #a7f3d0;}
+  .terminal-card.unsigned{border:1.5px solid #fde68a;}
+  .terminal-icon{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+  .add-btn{width:100%;padding:12px 0;background:linear-gradient(135deg,#0a1628,#0d3b7a);color:#fff;border:none;border-radius:12px;font-weight:700;font-size:14px;margin-top:4px;}
+
+  /* スタッフタブ */
+  .staff-card{background:#fff;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 1px 6px rgba(0,0,0,.06);}
+  .staff-input{width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;margin-bottom:8px;}
+  .staff-del-btn{padding:8px 12px;background:#fef2f2;color:#dc2626;border:none;border-radius:8px;font-weight:700;font-size:13px;}
+  .staff-add-btn{width:100%;padding:11px 0;background:#f1f5f9;color:#0d3b7a;border:2px dashed #cbd5e1;border-radius:10px;font-weight:700;font-size:13px;margin-top:4px;}
+  .staff-save-btn{width:100%;padding:11px 0;background:linear-gradient(135deg,#0a1628,#0d3b7a);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:14px;margin-top:10px;}
+
+  /* モーダル */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;z-index:200;}
+  .modal-box{background:#fff;border-radius:24px 24px 0 0;padding:20px 20px 36px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;box-shadow:0 -8px 40px rgba(0,0,0,.25);}
+  .modal-handle{width:40px;height:4px;background:#e2e8f0;border-radius:2px;margin:0 auto 16px;}
+  .modal-title{font-weight:900;font-size:16px;color:#0a1628;margin-bottom:16px;}
+  .modal-label{font-size:12px;font-weight:700;color:#374151;margin-bottom:5px;}
+  .modal-input{width:100%;padding:11px 13px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;margin-bottom:12px;background:#fff;color:#1e293b;}
+  .modal-select{width:100%;padding:11px 13px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;margin-bottom:12px;background:#fff;color:#1e293b;}
+  .modal-textarea{width:100%;padding:11px 13px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;margin-bottom:12px;background:#fff;color:#1e293b;resize:none;height:80px;}
+  .modal-save-btn{width:100%;padding:14px 0;background:linear-gradient(135deg,#0a1628,#0d3b7a);color:#fff;border:none;border-radius:14px;font-weight:800;font-size:16px;margin-bottom:10px;}
+  .modal-cancel-btn{flex:1;padding:12px 0;background:#f1f5f9;color:#64748b;border:none;border-radius:12px;font-weight:700;font-size:14px;}
+  .modal-del-btn{flex:1;padding:12px 0;background:#fef2f2;color:#dc2626;border:none;border-radius:12px;font-weight:700;font-size:14px;}
+
+  /* トースト */
+  .toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);color:#fff;padding:9px 22px;border-radius:30px;font-weight:700;font-size:13px;z-index:500;box-shadow:0 4px 20px rgba(0,0,0,.25);white-space:nowrap;pointer-events:none;}
+
+  /* カレンダーピッカー */
+  .cal-wrap{position:relative;margin-bottom:12px;}
+  .cal-trigger{width:100%;padding:11px 13px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;background:#fff;text-align:left;display:flex;align-items:center;justify-content:space-between;}
+  .cal-popup{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.18);border:1.5px solid #e2e8f0;z-index:100;padding:14px 12px;}
+  .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .cal-nav-btn{background:#f1f5f9;border:none;border-radius:8px;width:30px;height:30px;font-size:16px;color:#0d3b7a;font-weight:900;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+  .cal-wd{text-align:center;font-size:11px;font-weight:700;padding:4px 0;}
+  .cal-day{padding:6px 0;border-radius:8px;border:none;font-size:13px;background:transparent;width:100%;}
+
+  /* ログイン */
+  .login-wrap{min-height:100vh;background:linear-gradient(160deg,#0a1628 0%,#0d3b7a 60%,#1a5276 100%);display:flex;align-items:center;justify-content:center;padding:20px;}
+  .login-box{background:rgba(255,255,255,.97);border-radius:28px;padding:36px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+  .login-btn{width:100%;padding:14px 0;border:none;border-radius:14px;font-weight:800;font-size:16px;letter-spacing:.5px;}
+
+  /* ユーティリティ */
+  .flex{display:flex;}
+  .flex-1{flex:1;}
+  .items-center{align-items:center;}
+  .gap-8{gap:8px;}
+  .gap-10{gap:10px;}
+  .ml-8{margin-left:8px;}
+  .p-14{padding:0 14px;}
+  .mt-4{margin-top:4px;}
+  .w-full{width:100%;}
+  .info-box{background:#1e293b;border-radius:14px;padding:14px 16px;color:#e2e8f0;}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+// ============================================================
+// データ・定数
+// ============================================================
+const MONTHS_JP = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
+const WEEK_JP = ["日","月","火","水","木","金","土"];
+
+const CONTENT_MASTER = [
+  "サービス変更・調整の相談","体調変化・急変の連絡","入院・受診の連絡","退院・帰宅の連絡",
+  "サービス事業所からの連絡","家族からの状況確認","緊急時対応の相談","ターミナル期に関する相談",
+  "夜間・休日の薬・医療に関する相談","転倒・事故の連絡","認知症症状への対応相談",
+  "サービス拒否・トラブルの連絡","その他（詳細は備考に記入）"
+];
+const RESPONSE_MASTER = [
+  "電話で状況確認・助言","主治医・医療機関に連絡・連携","サービス事業所に連絡・調整",
+  "家族へ連絡・説明","緊急訪問の手配","救急要請の助言・手配",
+  "翌営業日に対応予定として記録","モニタリング記録に追記予定",
+  "居宅サービス計画の変更検討を開始","地域包括支援センターへ連絡","その他（詳細は備考に記入）"
+];
+
+// ============================================================
+// localStorage ラッパー
+// ============================================================
+const Store = {
+  get(key, def) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : def; } catch { return def; } },
+  set(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch {} }
+};
+
+// ============================================================
+// アプリ状態
+// ============================================================
+const state = {
+  userName: Store.get("userName", ""),
+  tab: "calendar",
+  year: new Date().getFullYear(),
+  month: new Date().getMonth(),
+  data: Store.get("24h-data", {}),         // { "YYYY-MM-DD": { hasCall, dutyStaff, records[], note } }
+  terminal: Store.get("24h-terminal", {}), // { "名前": { careManager, signed, signDate, note } }
+  staff: Store.get("24h-staff", ["山田 花子","佐藤 太郎","鈴木 恵子","田中 美穂","中村 健一"]),
+  modal: null,   // { type: "record"|"terminal"|"confirm", ... }
+  noteModal: null, // { dk, note }
+  openDays: {},  // { "YYYY-MM-DD": bool }
+  toast: null,
+  toastTimer: null,
+  calOpen: false,
+};
+
+function saveData() { Store.set("24h-data", state.data); }
+function saveTerminal() { Store.set("24h-terminal", state.terminal); }
+function saveStaff() { Store.set("24h-staff", state.staff); }
+function saveUserName() { Store.set("userName", state.userName); }
+
+function showToast(msg, type="ok") {
+  if (state.toastTimer) clearTimeout(state.toastTimer);
+  state.toast = { msg, type };
+  render();
+  state.toastTimer = setTimeout(() => { state.toast = null; render(); }, 2200);
+}
+
+function dateKey(y, m, d) {
+  return `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+}
+function getDayData(dk) {
+  return state.data[dk] || { hasCall: null, dutyStaff: "", records: [], note: "" };
+}
+function fmtNow() {
+  return new Date().toLocaleString("ja-JP", { month:"numeric", day:"numeric", hour:"2-digit", minute:"2-digit" });
+}
+function getDays(y, m) {
+  const last = new Date(y, m+1, 0).getDate();
+  return Array.from({length: last}, (_, i) => {
+    const d = i+1;
+    const date = new Date(y, m, d);
+    return { day: d, wd: WEEK_JP[date.getDay()], dow: date.getDay() };
+  });
+}
+
+// ============================================================
+// レンダリング
+// ============================================================
+function render() {
+  const app = document.getElementById("app");
+  if (!state.userName) { app.innerHTML = renderLogin(); bindLogin(); return; }
+  app.innerHTML = renderMain();
+  bindMain();
+}
+
+// ---- ログイン ----
+function renderLogin() {
+  return `
+  <div class="login-wrap">
+    <div class="login-box">
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="font-size:52px;margin-bottom:10px;">📋</div>
+        <div style="font-weight:900;font-size:20px;color:#0a1628;">24時間連絡体制</div>
+        <div style="font-weight:700;font-size:13px;color:#0d3b7a;margin-top:3px;">対応記録システム</div>
+        <div style="display:flex;gap:6px;justify-content:center;margin-top:8px;flex-wrap:wrap;">
+          ${["北九州市集団指導準拠","ターミナル加算対応","2027年3月まで記録"].map(t=>
+            `<span style="font-size:9px;background:#eff6ff;color:#1d4ed8;padding:2px 8px;border-radius:20px;font-weight:700;">${t}</span>`
+          ).join("")}
+        </div>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:8px;">お名前を入力してください</div>
+      <input id="name-input" placeholder="例：山田 花子" style="width:100%;padding:13px 16px;border:2px solid #e2e8f0;border-radius:14px;font-size:15px;outline:none;box-sizing:border-box;font-family:inherit;margin-bottom:6px;">
+      <div style="font-size:11px;color:#94a3b8;margin-bottom:20px;">※ 記録に名前が表示されます</div>
+      <button id="login-btn" class="login-btn" style="background:#e2e8f0;color:#94a3b8;">ログイン →</button>
+      <div style="margin-top:16px;background:#fffbeb;border-radius:12px;padding:10px 14px;font-size:11px;color:#92400e;line-height:1.6;">
+        💡 このアプリのデータはこのスマホに保存されます
+      </div>
+    </div>
+  </div>`;
+}
+function bindLogin() {
+  const inp = document.getElementById("name-input");
+  const btn = document.getElementById("login-btn");
+  inp.addEventListener("input", () => {
+    const v = inp.value.trim();
+    btn.style.background = v ? "linear-gradient(135deg,#0a1628,#0d3b7a)" : "#e2e8f0";
+    btn.style.color = v ? "#fff" : "#94a3b8";
+  });
+  inp.addEventListener("keydown", e => { if (e.key==="Enter" && inp.value.trim()) login(inp.value.trim()); });
+  btn.addEventListener("click", () => { if (inp.value.trim()) login(inp.value.trim()); });
+}
+function login(name) { state.userName = name; saveUserName(); render(); }
+
+// ---- メイン ----
+function renderMain() {
+  const days = getDays(state.year, state.month);
+  const today = new Date();
+  const stats = {
+    total: days.length,
+    recorded: days.filter(d => getDayData(dateKey(state.year,state.month,d.day)).hasCall !== null).length,
+    callDays: days.filter(d => getDayData(dateKey(state.year,state.month,d.day)).hasCall === true).length,
+    totalCalls: days.reduce((a,d) => a + (getDayData(dateKey(state.year,state.month,d.day)).records||[]).length, 0),
+  };
+  const tSigned = Object.values(state.terminal).filter(u=>u.signed).length;
+  const tTotal = Object.keys(state.terminal).length;
+
+  return `
+  ${state.toast ? `<div class="toast" style="background:${state.toast.type==="err"?"#dc2626":"#0d3b7a"}">${state.toast.msg}</div>` : ""}
+
+  <div class="header">
+    <div class="flex" style="justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+      <div>
+        <div class="header-label">特定事業所加算Ⅰ 算定要件④</div>
+        <div class="header-title">📋 24時間連絡体制 記録</div>
+        <div class="header-sub">北九州市集団指導資料準拠 / 2025.4〜2027.3</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="background:rgba(255,255,255,.12);border-radius:10px;padding:5px 10px;font-size:11px;margin-bottom:4px;">
+          <div style="opacity:.6;font-size:9px;">記録者</div>
+          <div style="font-weight:700;">👤 ${state.userName}</div>
+        </div>
+        <button id="logout-btn" style="background:rgba(255,255,255,.2);border:none;color:#fff;font-size:10px;padding:4px 10px;border-radius:8px;font-weight:700;cursor:pointer;">ログアウト</button>
+      </div>
+    </div>
+    <div class="month-nav">
+      <button class="nav-btn" id="prev-month">‹</button>
+      <span>${state.year}年 ${MONTHS_JP[state.month]}</span>
+      <button class="nav-btn" id="next-month">›</button>
+    </div>
+    <div class="stats">
+      <div class="stat-badge">記録済 <strong style="color:#93c5fd">${stats.recorded}/${stats.total}日</strong></div>
+      <div class="stat-badge">電話あり <strong style="color:#fbbf24">${stats.callDays}日</strong></div>
+      <div class="stat-badge">対応件数 <strong style="color:#86efac">${stats.totalCalls}件</strong></div>
+      <div class="stat-badge">未記録 <strong style="color:#fca5a5">${stats.total-stats.recorded}日</strong></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn ${state.tab==='calendar'?'active':'inactive'}" data-tab="calendar">📅 日別記録</button>
+    <button class="tab-btn ${state.tab==='terminal'?'active':'inactive'}" data-tab="terminal">🏥 ターミナル(${tSigned}/${tTotal}名)</button>
+    <button class="tab-btn ${state.tab==='staff'?'active':'inactive'}" data-tab="staff">👥 担当者設定</button>
+  </div>
+
+  <div class="p-14">
+    ${state.tab==='calendar' ? renderCalendar(days, today) : ""}
+    ${state.tab==='terminal' ? renderTerminal() : ""}
+    ${state.tab==='staff' ? renderStaff() : ""}
+  </div>
+
+  ${state.modal ? renderModal() : ""}
+  ${state.noteModal ? renderNoteModal() : ""}
+  `;
+}
+
+function renderCalendar(days, today) {
+  return days.map(({ day, wd, dow }) => {
+    const dk = dateKey(state.year, state.month, day);
+    const dd = getDayData(dk);
+    const isToday = today.getFullYear()===state.year && today.getMonth()===state.month && today.getDate()===day;
+    const isOpen = state.openDays[dk];
+    const recs = dd.records || [];
+    const isSun = dow===0, isSat = dow===6;
+    let cardClass = "day-card";
+    if (isToday) cardClass += " today";
+    else if (dd.hasCall===false) cardClass += " no-call";
+    else if (dd.hasCall===true) cardClass += " has-call";
+    else cardClass += " unrecorded";
+
+    return `
+    <div class="${cardClass}">
+      <div class="day-bar" data-dk="${dk}" data-action="toggle-day">
+        <div style="min-width:54px;display:flex;align-items:baseline;gap:2px;">
+          <span class="day-num ${isSun?'sun':isSat?'sat':isToday?'today-num':'normal'}">${day}</span>
+          <span class="day-wd" style="color:${isSun?'#dc2626':isSat?'#2563eb':'#94a3b8'}">(${wd})</span>
+          ${isToday?'<span class="today-badge">今日</span>':""}
+        </div>
+        <button class="call-btn ${dd.hasCall===false?'none-active':'none-inactive'}" data-dk="${dk}" data-call="false" onclick="event.stopPropagation()">📵 なし</button>
+        <button class="call-btn ${dd.hasCall===true?'yes-active':'yes-inactive'}" data-dk="${dk}" data-call="true" onclick="event.stopPropagation()">📞 あり</button>
+        <div style="flex:1;text-align:right;">
+          <select class="duty-select" data-dk="${dk}" data-action="duty" onclick="event.stopPropagation()">
+            <option value="">当番未設定</option>
+            ${state.staff.map(s=>`<option value="${s}" ${dd.dutyStaff===s?'selected':''}>${s}</option>`).join("")}
+          </select>
+        </div>
+        ${recs.length>0?`<div class="call-badge">${recs.length}件</div>`:""}
+        <span class="expand-arrow">${isOpen?'▲':'▼'}</span>
+      </div>
+      ${isOpen ? `
+      <div class="day-expand">
+        ${recs.length===0
+          ? `<div class="empty-msg">${dd.hasCall===true?'電話あり → 記録を追加してください':'記録なし'}</div>`
+          : recs.map(rec=>`
+          <div class="rec-card">
+            <div class="flex items-center gap-8" style="flex-wrap:wrap;margin-bottom:5px;">
+              <span class="rec-time">🕐 ${rec.time||'時刻未入力'}</span>
+              <span class="rec-staff">${rec.staff}</span>
+            </div>
+            <div style="font-size:12px;color:#374151;margin-bottom:3px;">
+              <span class="rec-label rec-content-label">内容：</span>
+              ${rec.content==='その他（詳細は備考に記入）'?rec.contentFree:rec.content}
+            </div>
+            <div style="font-size:12px;color:#374151;${rec.memo?'margin-bottom:3px':''}">
+              <span class="rec-label rec-response-label">対応：</span>
+              ${rec.response==='その他（詳細は備考に記入）'?rec.responseFree:rec.response}
+            </div>
+            ${rec.memo?`<div class="rec-memo">📝 ${rec.memo}</div>`:''}
+            <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:5px;">
+              <div class="rec-meta">記録：${rec.createdBy} ${rec.createdAt}${rec.updatedBy?` / 更新：${rec.updatedBy} ${rec.updatedAt}`:''}</div>
+              <div class="rec-actions">
+                <button class="btn-edit" data-dk="${dk}" data-rid="${rec.id}" data-action="edit-rec">編集</button>
+                <button class="btn-del" data-dk="${dk}" data-rid="${rec.id}" data-action="del-rec">削除</button>
+              </div>
+            </div>
+          </div>`).join("")}
+        <button class="add-rec-btn" data-dk="${dk}" data-action="add-rec">＋ 対応記録を追加</button>
+        <button style="width:100%;margin-top:8px;padding:11px 0;background:${dd.note?'#0891b2':'#f1f5f9'};color:${dd.note?'#fff':'#64748b'};border:none;border-radius:10px;font-weight:700;font-size:13px;font-family:inherit;cursor:pointer;" data-dk="${dk}" data-action="open-note">
+          📋 ${dd.note ? '申し送りあり（タップして編集）' : '特記事項・申し送りを入力'}
+        </button>
+      </div>
+      ` : ""}
+    </div>`;
+  }).join("");
+}
+
+function renderTerminal() {
+  const entries = Object.entries(state.terminal);
+  return `
+  <div class="terminal-header">
+    <div style="font-weight:800;font-size:15px;margin-bottom:4px;">🏥 ターミナルケア加算 利用者管理</div>
+    <div style="font-size:11px;opacity:.75;line-height:1.6;">署名取得状況を管理します（北九州市集団指導資料準拠）</div>
+    <div style="display:flex;gap:10px;margin-top:10px;">
+      <div style="background:rgba(255,255,255,.15);border-radius:10px;padding:6px 14px;font-size:12px;">署名取得済 <strong style="color:#86efac">${entries.filter(([,u])=>u.signed).length}名</strong></div>
+      <div style="background:rgba(255,255,255,.15);border-radius:10px;padding:6px 14px;font-size:12px;">未取得 <strong style="color:#fca5a5">${entries.filter(([,u])=>!u.signed).length}名</strong></div>
+    </div>
+  </div>
+  ${entries.map(([name, info]) => `
+  <div class="terminal-card ${info.signed?'signed':'unsigned'}">
+    <div class="flex items-center gap-10">
+      <div class="terminal-icon" style="background:${info.signed?'#d1fae5':'#fef3c7'}">${info.signed?'✅':'⏳'}</div>
+      <div style="flex:1;">
+        <div style="font-weight:800;font-size:14px;color:#0a1628;">${name}</div>
+        ${info.careManager?`<div style="font-size:11px;color:#0d3b7a;font-weight:600;">担当CM：${info.careManager}</div>`:''}
+        ${info.signed
+          ? `<div style="font-size:11px;color:#059669;">✅ 署名取得済 · ${info.signDate?formatDate(info.signDate):''}</div>`
+          : `<div style="font-size:11px;color:#d97706;">⏳ 署名未取得</div>`}
+        ${info.note?`<div style="font-size:11px;color:#64748b;margin-top:2px;">${info.note}</div>`:''}
+      </div>
+      <button class="btn-edit" data-name="${name}" data-action="edit-terminal">編集</button>
+    </div>
+  </div>`).join("")}
+  <button class="add-btn" data-action="add-terminal">＋ 利用者を追加</button>`;
+}
+
+function renderStaff() {
+  return `
+  <div class="staff-card">
+    <div style="font-weight:800;font-size:15px;color:#0a1628;margin-bottom:12px;">👥 担当者リスト管理</div>
+    <div style="font-size:11px;color:#64748b;margin-bottom:14px;line-height:1.6;">
+      当番設定プルダウンに表示するスタッフ名を管理します。<br>
+      <strong>北九州市集団指導資料：</strong>輪番制の場合は輪番表を書面で作成・保存すること。
+    </div>
+    ${state.staff.map((s, i) => `
+    <div class="flex items-center gap-8" style="margin-bottom:8px;">
+      <input class="staff-input" style="flex:1;margin-bottom:0;" value="${s}" data-idx="${i}" data-action="staff-input">
+      <button class="staff-del-btn" data-idx="${i}" data-action="staff-del">削除</button>
+    </div>`).join("")}
+    <button class="staff-add-btn" data-action="staff-add">＋ スタッフを追加</button>
+    <button class="staff-save-btn" data-action="staff-save">💾 保存する</button>
+  </div>
+  <div class="info-box">
+    <div style="font-weight:700;font-size:13px;color:#93c5fd;margin-bottom:6px;">📖 集団指導資料 根拠</div>
+    <div style="font-size:12px;line-height:1.8;">「24時間連絡可能な体制」とは、常時、担当者が携帯電話等により連絡を取ることができ、必要に応じて相談に応じることが可能な体制です。当該事業所の介護支援専門員が輪番制で対応すること等も可能です。<br><span style="color:#94a3b8;font-size:10px;">令和7年度集団指導資料（北九州市）/ 平成12年老企第36号</span></div>
+  </div>`;
+}
+
+function renderNoteModal() {
+  const m = state.noteModal;
+  return `
+  <div style="position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;flex-direction:column;z-index:300;" id="note-modal-overlay">
+    <div style="background:#0d3b7a;color:#fff;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <div style="font-weight:800;font-size:16px;">📋 特記事項・申し送り</div>
+      <button id="note-modal-close" style="background:rgba(255,255,255,.2);border:none;color:#fff;font-size:13px;padding:6px 14px;border-radius:8px;font-weight:700;cursor:pointer;">閉じる</button>
+    </div>
+    <div style="background:#fff;flex:1;display:flex;flex-direction:column;padding:16px;overflow:hidden;">
+      <div style="font-size:11px;color:#94a3b8;margin-bottom:8px;">文字起こしも貼り付け可能です</div>
+      <textarea id="note-modal-textarea" style="flex:1;width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:12px;font-size:14px;font-family:inherit;resize:none;outline:none;box-sizing:border-box;">${m.note||''}</textarea>
+      <button id="note-modal-save" style="margin-top:12px;width:100%;padding:14px 0;background:#059669;color:#fff;border:none;border-radius:12px;font-weight:800;font-size:16px;font-family:inherit;cursor:pointer;flex-shrink:0;">💾 保存する</button>
+    </div>
+  </div>`;
+}
+
+// ---- モーダル ----
+function renderModal() {
+  const m = state.modal;
+  if (m.type === "record") return renderRecordModal(m);
+  if (m.type === "terminal") return renderTerminalModal(m);
+  return "";
+}
+
+function renderRecordModal(m) {
+  const r = m.record;
+  return `
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal-box" id="modal-box">
+      <div class="modal-handle"></div>
+      <div class="modal-title">${m.isNew?'📞 対応記録を追加':'✏️ 対応記録を編集'}</div>
+      <div class="modal-label">対応時刻 *</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <select class="modal-select" id="rec-hour" style="flex:1;margin-bottom:0;">
+          ${Array.from({length:24},(_,i)=>i).map(h=>`<option value="${String(h).padStart(2,'0')}" ${r.time&&r.time.split(':')[0]===String(h).padStart(2,'0')?'selected':''}>${String(h).padStart(2,'0')}時</option>`).join('')}
+        </select>
+        <select class="modal-select" id="rec-min" style="flex:1;margin-bottom:0;">
+          ${['00','05','10','15','20','25','30','35','40','45','50','55'].map(mn=>`<option value="${mn}" ${r.time&&r.time.split(':')[1]===mn?'selected':''}>${mn}分</option>`).join('')}
+        </select>
+      </div>
+      <div class="modal-label">対応担当者 *</div>
+      <select class="modal-select" id="rec-staff">
+        ${state.staff.map(s=>`<option value="${s}" ${r.staff===s?'selected':''}>${s}</option>`).join("")}
+        <option value="その他" ${r.staff==='その他'?'selected':''}>その他</option>
+      </select>
+      <div class="modal-label">相談・連絡の内容 *</div>
+      <select class="modal-select" id="rec-content">
+        <option value="">-- 選択してください --</option>
+        ${CONTENT_MASTER.map(c=>`<option value="${c}" ${r.content===c?'selected':''}>${c}</option>`).join("")}
+      </select>
+      ${r.content==='その他（詳細は備考に記入）'?`<textarea class="modal-input" id="rec-content-free" placeholder="具体的な相談内容" style="height:60px;resize:none;">${r.contentFree||''}</textarea>`:''}
+      <div class="modal-label">どのように対応したか *</div>
+      <select class="modal-select" id="rec-response">
+        <option value="">-- 選択してください --</option>
+        ${RESPONSE_MASTER.map(c=>`<option value="${c}" ${r.response===c?'selected':''}>${c}</option>`).join("")}
+      </select>
+      ${r.response==='その他（詳細は備考に記入）'?`<textarea class="modal-input" id="rec-response-free" placeholder="具体的な対応内容" style="height:60px;resize:none;">${r.responseFree||''}</textarea>`:''}
+      <div class="modal-label">備考・詳細メモ（任意）</div>
+      <textarea class="modal-textarea" id="rec-memo" placeholder="経緯・その後の対応予定・特記事項など">${r.memo||''}</textarea>
+      <button class="modal-save-btn" id="rec-save">💾 保存する</button>
+      <button class="modal-cancel-btn" id="rec-cancel">キャンセル</button>
+    </div>
+  </div>`;
+}
+
+function renderTerminalModal(m) {
+  const f = m.form;
+  const signedDateStr = f.signDate ? formatDate(f.signDate) : "日付を選択";
+  return `
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal-box" id="modal-box">
+      <div class="modal-handle"></div>
+      <div class="modal-title">🏥 ターミナル利用者 ${m.isNew?'追加':'編集'}</div>
+      <div class="modal-label">利用者名 *</div>
+      <input class="modal-input" id="t-name" placeholder="例：北九州 太郎" value="${f.name||''}">
+      <div class="modal-label">担当ケアマネジャー</div>
+      <select class="modal-select" id="t-cm">
+        <option value="">-- 担当者を選択 --</option>
+        ${state.staff.map(s=>`<option value="${s}" ${f.careManager===s?'selected':''}>${s}</option>`).join("")}
+        <option value="その他" ${f.careManager==='その他'?'selected':''}>その他</option>
+      </select>
+      <div class="modal-label">署名取得状況</div>
+      <div class="flex gap-10" style="margin-bottom:14px;">
+        <button id="t-unsigned" style="flex:1;padding:10px 0;border:2px solid ${!f.signed?'#fbbf24':'#e2e8f0'};border-radius:12px;background:${!f.signed?'#fffbeb':'#fff'};color:${!f.signed?'#d97706':'#94a3b8'};font-weight:700;font-size:13px;">⏳ 未取得</button>
+        <button id="t-signed" style="flex:1;padding:10px 0;border:2px solid ${f.signed?'#6ee7b7':'#e2e8f0'};border-radius:12px;background:${f.signed?'#d1fae5':'#fff'};color:${f.signed?'#059669':'#94a3b8'};font-weight:700;font-size:13px;">✅ 取得済み</button>
+      </div>
+      ${f.signed ? `
+      <div class="modal-label">署名取得日</div>
+      <div class="cal-wrap" id="cal-wrap">
+        <button class="cal-trigger" id="cal-trigger" type="button">
+          <span>📅 ${signedDateStr}</span>
+          <span style="font-size:11px;color:#94a3b8;">▼</span>
+        </button>
+        ${m.calOpen ? renderCalPopup(f.signDate) : ''}
+      </div>
+      ` : ''}
+      <div class="modal-label">備考・メモ（任意）</div>
+      <textarea class="modal-textarea" id="t-note" placeholder="家族への説明日・書類保存場所など">${f.note||''}</textarea>
+      <button class="modal-save-btn" id="t-save">💾 保存する</button>
+      <div class="flex gap-10">
+        ${!m.isNew?`<button class="modal-del-btn" id="t-del">🗑 削除</button>`:''}
+        <button class="modal-cancel-btn" id="t-cancel">キャンセル</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderCalPopup(selected) {
+  const m = state.modal;
+  const cy = m.calYear || (selected ? parseInt(selected.split('-')[0]) : new Date().getFullYear());
+  const cm = m.calMonth !== undefined ? m.calMonth : (selected ? parseInt(selected.split('-')[1])-1 : new Date().getMonth());
+  const today = new Date();
+  const first = new Date(cy, cm, 1).getDay();
+  const last = new Date(cy, cm+1, 0).getDate();
+  const cells = [];
+  for (let i=0;i<first;i++) cells.push(null);
+  for (let d=1;d<=last;d++) cells.push(d);
+
+  const selY = selected ? parseInt(selected.split('-')[0]) : null;
+  const selM = selected ? parseInt(selected.split('-')[1])-1 : null;
+  const selD = selected ? parseInt(selected.split('-')[2]) : null;
+
+  return `
+  <div class="cal-popup" id="cal-popup">
+    <div class="cal-nav">
+      <button class="cal-nav-btn" id="cal-prev">‹</button>
+      <span style="font-weight:800;font-size:15px;color:#0a1628;">${cy}年 ${MONTHS_JP[cm]}</span>
+      <button class="cal-nav-btn" id="cal-next">›</button>
+    </div>
+    <div class="cal-grid" style="margin-bottom:4px;">
+      ${WEEK_JP.map((w,i)=>`<div class="cal-wd" style="color:${i===0?'#dc2626':i===6?'#2563eb':'#64748b'}">${w}</div>`).join("")}
+    </div>
+    <div class="cal-grid">
+      ${cells.map((d,i) => {
+        if (!d) return `<div></div>`;
+        const col = i%7;
+        const isSun=col===0, isSat=col===6;
+        const isTd = today.getFullYear()===cy && today.getMonth()===cm && today.getDate()===d;
+        const isSel = selY===cy && selM===cm && selD===d;
+        return `<button class="cal-day" data-action="cal-day" data-d="${d}" data-y="${cy}" data-m="${cm}"
+          style="font-weight:${isSel||isTd?800:400};background:${isSel?'#0d3b7a':isTd?'#eff6ff':'transparent'};color:${isSel?'#fff':isSun?'#dc2626':isSat?'#2563eb':isTd?'#0d3b7a':'#1e293b'};outline:${isTd&&!isSel?'2px solid #93c5fd':'none'}">${d}</button>`;
+      }).join("")}
+    </div>
+    ${selected?`<button id="cal-clear" style="width:100%;margin-top:10px;padding:7px 0;background:#fef2f2;color:#dc2626;border:none;border-radius:8px;font-size:12px;font-weight:700;">クリア</button>`:''}
+  </div>`;
+}
+
+function formatDate(str) {
+  if (!str) return '';
+  const d = new Date(str);
+  return d.toLocaleDateString("ja-JP", {year:"numeric",month:"long",day:"numeric"});
+}
+
+// ============================================================
+// イベントバインド
+// ============================================================
+function bindMain() {
+  const app = document.getElementById("app");
+
+  // ログアウト
+  const logoutBtn = document.getElementById('logout-btn');
+  if (logoutBtn) logoutBtn.addEventListener('click', () => {
+    if (confirm('ログアウトしますか？\n（記録データは消えません）')) {
+      state.userName = '';
+      localStorage.removeItem('userName');
+      render();
+    }
+  });
+
+  // タブ切り替え
+  app.querySelectorAll('[data-tab]').forEach(btn => {
+    btn.addEventListener('click', () => { state.tab = btn.dataset.tab; render(); });
+  });
+
+  // 月ナビ
+  const prev = document.getElementById('prev-month');
+  const next = document.getElementById('next-month');
+  if (prev) prev.addEventListener('click', () => {
+    if (state.month===0){state.year--;state.month=11;}else state.month--;
+    render();
+  });
+  if (next) next.addEventListener('click', () => {
+    if (state.month===11){state.year++;state.month=0;}else state.month++;
+    render();
+  });
+
+  if (state.tab === 'calendar') bindCalendar(app);
+  if (state.tab === 'terminal') bindTerminal(app);
+  if (state.tab === 'staff') bindStaff(app);
+  if (state.modal) bindModal(app);
+  if (state.noteModal) bindNoteModal(app);
+}
+
+function bindCalendar(app) {
+  // 日付行クリックで開閉
+  app.querySelectorAll('[data-action="toggle-day"]').forEach(el => {
+    el.addEventListener('click', () => {
+      const dk = el.dataset.dk;
+      state.openDays[dk] = !state.openDays[dk];
+      render();
+    });
+  });
+
+  // 電話あり/なしボタン
+  app.querySelectorAll('[data-call]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const dk = btn.dataset.dk;
+      const val = btn.dataset.call === 'true';
+      const dd = getDayData(dk);
+      state.data[dk] = { ...dd, hasCall: val };
+      if (val) state.openDays[dk] = true;
+      saveData();
+      render();
+    });
+  });
+
+  // 当番プルダウン
+  app.querySelectorAll('[data-action="duty"]').forEach(sel => {
+    sel.addEventListener('change', e => {
+      e.stopPropagation();
+      const dk = sel.dataset.dk;
+      const dd = getDayData(dk);
+      state.data[dk] = { ...dd, dutyStaff: sel.value };
+      saveData();
+      render();
+    });
+  });
+
+  // 記録追加
+  app.querySelectorAll('[data-action="add-rec"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.modal = { type:'record', dk:btn.dataset.dk, isNew:true, record:{ time:'', staff:state.staff[0]||'', content:'', contentFree:'', response:'', responseFree:'', memo:'' }};
+      render();
+    });
+  });
+
+  // 記録編集
+  app.querySelectorAll('[data-action="edit-rec"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const dk = btn.dataset.dk;
+      const rid = parseInt(btn.dataset.rid);
+      const rec = (getDayData(dk).records||[]).find(r=>r.id===rid);
+      if (rec) { state.modal = { type:'record', dk, isNew:false, record:{...rec} }; render(); }
+    });
+  });
+
+  // 記録削除
+  app.querySelectorAll('[data-action="del-rec"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (!confirm('削除しますか？')) return;
+      const dk = btn.dataset.dk;
+      const rid = parseInt(btn.dataset.rid);
+      const dd = getDayData(dk);
+      state.data[dk] = { ...dd, records:(dd.records||[]).filter(r=>r.id!==rid) };
+      saveData(); showToast('記録を削除しました'); render();
+    });
+  });
+
+  // 申し送り保存ボタン
+  app.querySelectorAll('[data-action="note-save"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const dk = btn.dataset.dk;
+      const ta = app.querySelector(`[data-action="note"][data-dk="${dk}"]`);
+      if (ta) {
+        const dd = getDayData(dk);
+        state.data[dk] = { ...dd, note: ta.value };
+        saveData();
+        showToast('申し送りを保存しました✅');
+      }
+    });
+  });
+
+  // 申し送りボタン
+  app.querySelectorAll('[data-action="open-note"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const dk = btn.dataset.dk;
+      const dd = getDayData(dk);
+      state.noteModal = { dk, note: dd.note || '' };
+      render();
+    });
+  });
+
+  // 備考メモ（入力のたびに自動保存）
+  app.querySelectorAll('[data-action="note"]').forEach(ta => {
+    let noteTimer = null;
+    ta.addEventListener('input', () => {
+      const dk = ta.dataset.dk;
+      const val = ta.value;
+      // stateに即反映
+      const dd = getDayData(dk);
+      state.data[dk] = { ...dd, note: val };
+      // 500msデバウンスで保存
+      if (noteTimer) clearTimeout(noteTimer);
+      noteTimer = setTimeout(() => {
+        saveData();
+        showToast('申し送りを保存しました');
+      }, 500);
+    });
+    // フォーカスが外れたときも保存
+    ta.addEventListener('blur', () => {
+      const dk = ta.dataset.dk;
+      const dd = getDayData(dk);
+      state.data[dk] = { ...dd, note: ta.value };
+      saveData();
+    });
+  });
+}
+
+function bindTerminal(app) {
+  app.querySelectorAll('[data-action="edit-terminal"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const name = btn.dataset.name;
+      const info = state.terminal[name] || {};
+      state.modal = { type:'terminal', isNew:false, origName:name, form:{ name, careManager:info.careManager||'', signed:info.signed||false, signDate:info.signDate||'', note:info.note||'' }, calOpen:false };
+      render();
+    });
+  });
+  const addBtn = app.querySelector('[data-action="add-terminal"]');
+  if (addBtn) addBtn.addEventListener('click', () => {
+    state.modal = { type:'terminal', isNew:true, form:{ name:'', careManager:'', signed:false, signDate:'', note:'' }, calOpen:false };
+    render();
+  });
+}
+
+function bindStaff(app) {
+  app.querySelectorAll('[data-action="staff-input"]').forEach(inp => {
+    inp.addEventListener('input', () => { state.staff[parseInt(inp.dataset.idx)] = inp.value; });
+  });
+  app.querySelectorAll('[data-action="staff-del"]').forEach(btn => {
+    btn.addEventListener('click', () => { state.staff.splice(parseInt(btn.dataset.idx),1); saveStaff(); render(); });
+  });
+  const addBtn = app.querySelector('[data-action="staff-add"]');
+  if (addBtn) addBtn.addEventListener('click', () => { state.staff.push(''); render(); });
+  const saveBtn = app.querySelector('[data-action="staff-save"]');
+  if (saveBtn) saveBtn.addEventListener('click', () => { saveStaff(); showToast('保存しました'); render(); });
+}
+
+function bindNoteModal(app) {
+  const closeBtn = document.getElementById('note-modal-close');
+  const saveBtn = document.getElementById('note-modal-save');
+  if (closeBtn) closeBtn.addEventListener('click', () => {
+    state.noteModal = null; render();
+  });
+  if (saveBtn) saveBtn.addEventListener('click', () => {
+    const ta = document.getElementById('note-modal-textarea');
+    const dk = state.noteModal.dk;
+    const dd = getDayData(dk);
+    state.data[dk] = { ...dd, note: ta.value };
+    saveData();
+    state.noteModal = null;
+    showToast('申し送りを保存しました✅');
+    render();
+  });
+}
+
+function bindModal(app) {
+  const overlay = document.getElementById('modal-overlay');
+  const box = document.getElementById('modal-box');
+  if (overlay) overlay.addEventListener('click', e => { if (e.target===overlay){state.modal=null;render();} });
+
+  const m = state.modal;
+
+  if (m.type === 'record') {
+    // content/responseのchange → 再描画（その他の場合にfree入力欄を出す）
+    const contentSel = document.getElementById('rec-content');
+    const responseSel = document.getElementById('rec-response');
+    if (contentSel) contentSel.addEventListener('change', () => {
+      m.record.content = contentSel.value; render();
+    });
+    if (responseSel) responseSel.addEventListener('change', () => {
+      m.record.response = responseSel.value; render();
+    });
+
+    const saveBtn = document.getElementById('rec-save');
+    if (saveBtn) saveBtn.addEventListener('click', () => {
+      const hour = document.getElementById('rec-hour')?.value||'';
+      const min = document.getElementById('rec-min')?.value||'';
+      const time = hour && min ? `${hour}:${min}` : '';
+      const staff = document.getElementById('rec-staff')?.value||'';
+      const content = document.getElementById('rec-content')?.value||'';
+      const response = document.getElementById('rec-response')?.value||'';
+      if (!time||!staff||!content||!response) { showToast('時刻・担当者・内容・対応は必須です','err'); return; }
+      const contentFree = document.getElementById('rec-content-free')?.value||'';
+      const responseFree = document.getElementById('rec-response-free')?.value||'';
+      const memo = document.getElementById('rec-memo')?.value||'';
+      const dk = m.dk;
+      const dd = getDayData(dk);
+      let recs = [...(dd.records||[])];
+      if (m.isNew) {
+        recs.push({ id:Date.now(), time, staff, content, contentFree, response, responseFree, memo, createdBy:state.userName, createdAt:fmtNow() });
+      } else {
+        recs = recs.map(r => r.id===m.record.id ? {...r, time, staff, content, contentFree, response, responseFree, memo, updatedBy:state.userName, updatedAt:fmtNow()} : r);
+      }
+      state.data[dk] = { ...dd, records:recs, hasCall:true };
+      saveData();
+      state.modal = null;
+      showToast(m.isNew?'記録を追加しました':'記録を更新しました');
+      render();
+    });
+    const cancelBtn = document.getElementById('rec-cancel');
+    if (cancelBtn) cancelBtn.addEventListener('click', () => { state.modal=null; render(); });
+  }
+
+  if (m.type === 'terminal') {
+    // 署名ボタン
+    const unsignedBtn = document.getElementById('t-unsigned');
+    const signedBtn = document.getElementById('t-signed');
+    if (unsignedBtn) unsignedBtn.addEventListener('click', () => { m.form.signed=false; render(); });
+    if (signedBtn) signedBtn.addEventListener('click', () => { m.form.signed=true; render(); });
+
+    // カレンダーピッカー
+    const calTrigger = document.getElementById('cal-trigger');
+    if (calTrigger) calTrigger.addEventListener('click', e => {
+      e.stopPropagation();
+      m.calOpen = !m.calOpen;
+      if (m.calOpen && m.form.signDate) {
+        m.calYear = parseInt(m.form.signDate.split('-')[0]);
+        m.calMonth = parseInt(m.form.signDate.split('-')[1])-1;
+      }
+      render();
+    });
+    const calPrev = document.getElementById('cal-prev');
+    const calNext = document.getElementById('cal-next');
+    if (calPrev) calPrev.addEventListener('click', e => {
+      e.stopPropagation();
+      if (!m.calYear) m.calYear = new Date().getFullYear();
+      if (m.calMonth===undefined) m.calMonth = new Date().getMonth();
+      if (m.calMonth===0){m.calYear--;m.calMonth=11;}else m.calMonth--;
+      render();
+    });
+    if (calNext) calNext.addEventListener('click', e => {
+      e.stopPropagation();
+      if (!m.calYear) m.calYear = new Date().getFullYear();
+      if (m.calMonth===undefined) m.calMonth = new Date().getMonth();
+      if (m.calMonth===11){m.calYear++;m.calMonth=0;}else m.calMonth++;
+      render();
+    });
+    app.querySelectorAll('[data-action="cal-day"]').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const y=btn.dataset.y, mo=String(parseInt(btn.dataset.m)+1).padStart(2,'0'), d=String(btn.dataset.d).padStart(2,'0');
+        m.form.signDate = `${y}-${mo}-${d}`;
+        m.calOpen = false;
+        render();
+      });
+    });
+    const calClear = document.getElementById('cal-clear');
+    if (calClear) calClear.addEventListener('click', e => { e.stopPropagation(); m.form.signDate=''; m.calOpen=false; render(); });
+
+    // 保存
+    const saveBtn = document.getElementById('t-save');
+    if (saveBtn) saveBtn.addEventListener('click', () => {
+      const name = document.getElementById('t-name')?.value.trim()||'';
+      if (!name) { showToast('利用者名を入力してください','err'); return; }
+      const cm = document.getElementById('t-cm')?.value||'';
+      const note = document.getElementById('t-note')?.value||'';
+      if (!m.isNew && m.origName && m.origName!==name) delete state.terminal[m.origName];
+      state.terminal[name] = { careManager:cm, signed:m.form.signed, signDate:m.form.signDate, note };
+      saveTerminal();
+      state.modal = null;
+      showToast('保存しました');
+      render();
+    });
+    const delBtn = document.getElementById('t-del');
+    if (delBtn) delBtn.addEventListener('click', () => {
+      if (!confirm(`「${m.origName}」を削除しますか？`)) return;
+      delete state.terminal[m.origName];
+      saveTerminal();
+      state.modal = null;
+      showToast('削除しました');
+      render();
+    });
+    const cancelBtn = document.getElementById('t-cancel');
+    if (cancelBtn) cancelBtn.addEventListener('click', () => { state.modal=null; render(); });
+  }
+}
+
+// ============================================================
+// 初期化
+// ============================================================
+render();
+</script>
+</body>
+</html>
