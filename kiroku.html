@@ -432,7 +432,7 @@ function renderReport(){
         <span>${toWareki(ry)}（${ry}年）${rm+1}月</span>
         <button class="report-nav-btn" id="rep-next">›</button>
       </div>
-      <button class="btn-print" onclick="window.print()">🖨️ 印刷・PDF保存（行政提出用）</button>
+      <button class="btn-print" id="print-btn">🖨️ 印刷・PDF保存（行政提出用）</button>
     </div>
 
     <!-- 報告書本体（印刷対象） -->
@@ -708,7 +708,16 @@ function renderRecordModal(m){
       <div class="modal-handle"></div>
       <div class="modal-title">${m.isNew?'📞 対応記録を追加':'✏️ 対応記録を編集'}</div>
       <div class="modal-label">対応時刻 *</div>
-      <input type="text" class="modal-input" id="rec-time" placeholder="例：21:30" value="${r.time||''}">
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <select id="rec-time-h" style="flex:1;padding:11px 8px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:16px;outline:none;background:#fff;color:#1e293b;">
+        <option value="">時</option>
+        ${Array.from({length:24},(_,i)=>String(i).padStart(2,'0')).map(h=>`<option value="${h}" ${(r.time||'').startsWith(h)?'selected':''}>${h}時</option>`).join('')}
+      </select>
+      <select id="rec-time-m" style="flex:1;padding:11px 8px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:16px;outline:none;background:#fff;color:#1e293b;">
+        <option value="">分</option>
+        ${['00','05','10','15','20','25','30','35','40','45','50','55'].map(m=>`<option value="${m}" ${(r.time||'').endsWith(':'+m)?'selected':''}>${m}分</option>`).join('')}
+      </select>
+    </div>
       <div class="modal-label">対応担当者 *</div>
       <select class="modal-select" id="rec-staff">
         ${state.staff.map(s=>`<option value="${s}" ${r.staff===s?'selected':''}>${s}</option>`).join("")}
@@ -877,6 +886,9 @@ function bindMain(){
   if(prev)prev.addEventListener('click',()=>{if(state.month===0){state.year--;state.month=11;}else state.month--;render();});
   if(next)next.addEventListener('click',()=>{if(state.month===11){state.year++;state.month=0;}else state.month++;render();});
   // 報告書の月ナビ
+  // 印刷ボタン
+  const printBtn=document.getElementById('print-btn');
+  if(printBtn)printBtn.addEventListener('click',()=>{ window.print(); });
   const repPrev=document.getElementById('rep-prev');
   const repNext=document.getElementById('rep-next');
   if(repPrev)repPrev.addEventListener('click',()=>{if(state.reportMonth===0){state.reportYear--;state.reportMonth=11;}else state.reportMonth--;render();});
@@ -923,7 +935,7 @@ function bindModal(app){
     if(responseSel)responseSel.addEventListener('change',()=>{m.record.response=responseSel.value;});
     const saveBtn=document.getElementById('rec-save');
     if(saveBtn)saveBtn.addEventListener('click',()=>{
-      const time=document.getElementById('rec-time')?.value||'';
+      const th=document.getElementById('rec-time-h')?.value||'';const tm=document.getElementById('rec-time-m')?.value||'';const time=th&&tm?th+':'+tm:'';
       const staff=document.getElementById('rec-staff')?.value||'';
       const content=document.getElementById('rec-content')?.value||'';
       const response=document.getElementById('rec-response')?.value||'';
