@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>24時間連絡体制 月次報告書</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: "Meiryo", "MS Gothic", sans-serif;
+    background: #f0f4f8;
+    color: #1a2533;
+    padding: 16px;
+  }
+
+  /* ── 画面表示用コントロール ── */
+  .screen-only {
+    max-width: 720px;
+    margin: 0 auto 20px;
+  }
+  .ctrl-box {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+  .ctrl-box label {
+    font-size: 13px;
+    color: #475569;
+    font-weight: 600;
+  }
+  .ctrl-box select {
+    padding: 8px 12px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #f8fafc;
+    cursor: pointer;
+  }
+  .btn-print {
+    margin-left: auto;
+    background: linear-gradient(135deg, #1e5fa3, #2563eb);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+  }
+  .btn-print:hover { opacity: 0.9; }
+
+  /* ── 報告書本体 ── */
+  .report {
+    max-width: 720px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
+
+  /* タイトル帯 */
+  .report-header {
+    background: linear-gradient(135deg, #0f3460, #1e5fa3);
+    color: #fff;
+    padding: 20px 24px 16px;
+  }
+  .report-header h1 {
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+  .report-header .sub {
+    font-size: 12px;
+    opacity: 0.85;
+    letter-spacing: 0.03em;
+  }
+  .report-header .period {
+    margin-top: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    background: rgba(255,255,255,0.15);
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 20px;
+  }
+
+  /* サマリーカード */
+  .summary-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  .summary-card {
+    padding: 14px 12px;
+    text-align: center;
+    border-right: 1px solid #e2e8f0;
+  }
+  .summary-card:last-child { border-right: none; }
+  .summary-card .s-num {
+    font-size: 26px;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .summary-card .s-label {
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 600;
+  }
+  .num-total { color: #1e40af; }
+  .num-call  { color: #dc2626; }
+  .num-none  { color: #16a34a; }
+
+  /* セクション見出し */
+  .section-title {
+    background: #f1f5f9;
+    border-left: 4px solid #1e5fa3;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 800;
+    color: #1e3a5f;
+    letter-spacing: 0.05em;
+  }
+
+  /* 日別記録テーブル */
+  .daily-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .daily-table th {
+    background: #1e5fa3;
+    color: #fff;
+    padding: 7px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+    border-right: 1px solid rgba(255,255,255,0.2);
+  }
+  .daily-table th:last-child { border-right: none; }
+  .daily-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #e9ecef;
+    border-right: 1px solid #e9ecef;
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  .daily-table td:last-child { border-right: none; }
+  .daily-table tr:nth-child(even) td { background: #f8fafc; }
+  .daily-table tr:hover td { background: #eff6ff; }
+
+  .td-date { width: 80px; text-align: center; font-weight: 700; white-space: nowrap; }
+  .td-duty { width: 80px; text-align: center; color: #475569; }
+  .td-call { width: 60px; text-align: center; }
+  .td-detail { font-size: 11.5px; color: #374151; }
+
+  .badge-call { 
+    display: inline-block; 
+    background: #fee2e2; 
+    color: #b91c1c; 
+    border-radius: 4px; 
+    padding: 1px 6px; 
+    font-size: 11px; 
+    font-weight: 700; 
+  }
+  .badge-none { 
+    display: inline-block; 
+    background: #dcfce7; 
+    color: #15803d; 
+    border-radius: 4px; 
+    padding: 1px 6px; 
+    font-size: 11px; 
+    font-weight: 700; 
+  }
+  .badge-unset {
+    display: inline-block;
+    background: #f1f5f9;
+    color: #94a3b8;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 11px;
+  }
+
+  .call-detail {
+    margin-top: 3px;
+    padding: 4px 8px;
+    background: #fff7ed;
+    border-left: 3px solid #f97316;
+    border-radius: 0 4px 4px 0;
+    font-size: 11px;
+    color: #431407;
+    line-height: 1.6;
+  }
+
+  /* 電話あった日まとめ */
+  .call-summary-item {
+    padding: 10px 16px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .call-summary-item:last-child { border-bottom: none; }
+  .call-date-label {
+    font-weight: 800;
+    font-size: 13px;
+    color: #1e3a5f;
+    margin-bottom: 6px;
+  }
+  .call-detail-row {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 4px 10px;
+    font-size: 12px;
+    margin-bottom: 2px;
+  }
+  .call-detail-key {
+    color: #64748b;
+    font-weight: 600;
+  }
+  .call-detail-val {
+    color: #1a2533;
+  }
+
+  /* 月まとめ */
+  .monthly-summary {
+    padding: 14px 16px;
+  }
+  .ms-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px dotted #e2e8f0;
+    font-size: 13px;
+  }
+  .ms-row:last-child { border-bottom: none; }
+  .ms-key { color: #475569; }
+  .ms-val { font-weight: 700; color: #1e3a5f; }
+
+  /* フッター */
+  .report-footer {
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    padding: 12px 20px;
+    font-size: 11px;
+    color: #94a3b8;
+    text-align: right;
+  }
+
+  /* ── 印刷スタイル ── */
+  @media print {
+    body { background: #fff; padding: 0; }
+    .screen-only { display: none !important; }
+    .report {
+      box-shadow: none;
+      border-radius: 0;
+      max-width: 100%;
+    }
+    .report-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .section-title { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .daily-table th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .badge-call, .badge-none { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .call-detail { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    @page { margin: 10mm; size: A4; }
+  }
+
+  .empty-msg {
+    padding: 20px;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 13px;
+  }
+
+  .dow-sat { color: #2563eb; }
+  .dow-sun { color: #dc2626; }
+</style>
+</head>
+<body>
+
+<!-- 画面表示用コントロール -->
+<div class="screen-only">
+  <div class="ctrl-box">
+    <label>📅 対象月：</label>
+    <select id="sel-year" onchange="render()"></select>
+    <select id="sel-month" onchange="render()">
+      <option value="1">1月</option><option value="2">2月</option>
+      <option value="3">3月</option><option value="4">4月</option>
+      <option value="5">5月</option><option value="6">6月</option>
+      <option value="7">7月</option><option value="8">8月</option>
+      <option value="9">9月</option><option value="10">10月</option>
+      <option value="11">11月</option><option value="12">12月</option>
+    </select>
+    <button class="btn-print" onclick="window.print()">🖨️ 印刷・PDF保存</button>
+  </div>
+</div>
+
+<!-- 報告書本体 -->
+<div class="report" id="report">
+  <div id="report-inner">読み込み中...</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// ストレージキー（kiroku.htmlと同じキーを使用）
+// ═══════════════════════════════════════════════
+const STORAGE_KEY = 'kiroku_data_v1';
+const SHARED = true;
+
+const WEEK_JP = ['日','月','火','水','木','金','土'];
+
+// 和暦変換
+function toWareki(y) {
+  if (y >= 2019) return `令和${y - 2018}年`;
+  if (y >= 1989) return `平成${y - 1988}年`;
+  return `${y}年`;
+}
+
+// セレクトボックス初期化
+function initSelects() {
+  const yearSel = document.getElementById('sel-year');
+  const now = new Date();
+  for (let y = 2025; y <= 2027; y++) {
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = `${toWareki(y)}（${y}年）`;
+    if (y === now.getFullYear()) opt.selected = true;
+    yearSel.appendChild(opt);
+  }
+  document.getElementById('sel-month').value = now.getMonth() + 1;
+}
+
+// データ読み込み
+async function loadData() {
+  try {
+    const result = await window.storage.get(STORAGE_KEY, SHARED);
+    if (result && result.value) return JSON.parse(result.value);
+  } catch(e) {}
+  return null;
+}
+
+// 日付キー
+function dateKey(y, m, d) {
+  return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+
+// メイン描画
+async function render() {
+  const y = parseInt(document.getElementById('sel-year').value);
+  const m = parseInt(document.getElementById('sel-month').value);
+
+  const data = await loadData();
+  const days = new Date(y, m, 0).getDate(); // 月の日数
+  const waYear = y - 2018;
+
+  // 月のデータ収集
+  const dayList = [];
+  let callCount = 0;
+  let noneCount = 0;
+  let unsetCount = 0;
+
+  for (let d = 1; d <= days; d++) {
+    const key = dateKey(y, m, d);
+    const date = new Date(y, m - 1, d);
+    const dow = date.getDay();
+    const rec = (data && data.days && data.days[key]) ? data.days[key] : null;
+
+    const hasCall = rec ? rec.hasCall : null; // true/false/null
+    const duty = rec ? (rec.duty || '―') : '―';
+    const calls = rec ? (rec.calls || []) : [];
+
+    if (hasCall === true) callCount++;
+    else if (hasCall === false) noneCount++;
+    else unsetCount++;
+
+    dayList.push({ d, dow, key, hasCall, duty, calls });
+  }
+
+  const recordedDays = callCount + noneCount;
+
+  // ─── HTML組み立て ───
+  let html = '';
+
+  // タイトル
+  html += `
+  <div class="report-header">
+    <h1>📋 24時間連絡体制 月次報告書</h1>
+    <div class="sub">ケアプランセンター桃園　｜　特定事業所加算 体制確認書類</div>
+    <div class="period">令和${waYear}年（${y}年）${m}月分</div>
+  </div>`;
+
+  // サマリー
+  html += `
+  <div class="summary-row">
+    <div class="summary-card">
+      <div class="s-num num-total">${days}</div>
+      <div class="s-label">対象日数</div>
+    </div>
+    <div class="summary-card">
+      <div class="s-num num-call">${callCount}</div>
+      <div class="s-label">📞 電話あり</div>
+    </div>
+    <div class="summary-card">
+      <div class="s-num num-none">${noneCount}</div>
+      <div class="s-label">📵 電話なし</div>
+    </div>
+  </div>`;
+
+  // ── 毎日の記録 ──
+  html += `<div class="section-title">■ 日別記録一覧</div>`;
+  html += `
+  <table class="daily-table">
+    <tr>
+      <th class="td-date">日付</th>
+      <th class="td-duty">当番担当</th>
+      <th class="td-call">電話</th>
+      <th>対応内容</th>
+    </tr>`;
+
+  for (const { d, dow, hasCall, duty, calls } of dayList) {
+    const dowStr = WEEK_JP[dow];
+    const dowClass = dow === 0 ? 'dow-sun' : dow === 6 ? 'dow-sat' : '';
+    const dateStr = `${m}/${d}（<span class="${dowClass}">${dowStr}</span>）`;
+
+    let callBadge = '';
+    let detailHtml = '';
+
+    if (hasCall === true) {
+      callBadge = '<span class="badge-call">📞 あり</span>';
+      if (calls.length > 0) {
+        calls.forEach(c => {
+          detailHtml += `<div class="call-detail">`;
+          if (c.time) detailHtml += `⏰ ${c.time}　`;
+          if (c.handler) detailHtml += `担当：${c.handler}　`;
+          if (c.content) detailHtml += `<br>内容：${c.content}`;
+          if (c.response) detailHtml += `<br>対応：${c.response}`;
+          if (c.memo) detailHtml += `<br>備考：${c.memo}`;
+          detailHtml += `</div>`;
+        });
+      } else {
+        detailHtml = '<span style="color:#94a3b8;font-size:11px;">（詳細未入力）</span>';
+      }
+    } else if (hasCall === false) {
+      callBadge = '<span class="badge-none">📵 なし</span>';
+    } else {
+      callBadge = '<span class="badge-unset">未記録</span>';
+    }
+
+    html += `
+    <tr>
+      <td class="td-date">${dateStr}</td>
+      <td class="td-duty">${duty}</td>
+      <td class="td-call">${callBadge}</td>
+      <td class="td-detail">${detailHtml}</td>
+    </tr>`;
+  }
+  html += `</table>`;
+
+  // ── 電話があった日のまとめ ──
+  const callDays = dayList.filter(r => r.hasCall === true && r.calls.length > 0);
+  html += `<div class="section-title">■ 電話対応記録（詳細）</div>`;
+
+  if (callDays.length === 0) {
+    html += `<div class="empty-msg">電話対応なし、または詳細未入力です</div>`;
+  } else {
+    callDays.forEach(({ d, dow, duty, calls }) => {
+      const dowStr = WEEK_JP[dow];
+      html += `<div class="call-summary-item">`;
+      html += `<div class="call-date-label">📞 ${m}月${d}日（${dowStr}）　当番：${duty}</div>`;
+      calls.forEach((c, i) => {
+        html += `<div style="margin-bottom:6px;padding-left:8px;">`;
+        if (calls.length > 1) html += `<div style="font-size:11px;color:#6366f1;font-weight:700;margin-bottom:2px;">▶ 対応${i+1}件目</div>`;
+        if (c.time)     html += `<div class="call-detail-row"><span class="call-detail-key">対応時刻</span><span class="call-detail-val">${c.time}</span></div>`;
+        if (c.handler)  html += `<div class="call-detail-row"><span class="call-detail-key">対応担当</span><span class="call-detail-val">${c.handler}</span></div>`;
+        if (c.content)  html += `<div class="call-detail-row"><span class="call-detail-key">相談内容</span><span class="call-detail-val">${c.content}</span></div>`;
+        if (c.response) html += `<div class="call-detail-row"><span class="call-detail-key">対応内容</span><span class="call-detail-val">${c.response}</span></div>`;
+        if (c.memo)     html += `<div class="call-detail-row"><span class="call-detail-key">備考</span><span class="call-detail-val">${c.memo}</span></div>`;
+        html += `</div>`;
+      });
+      html += `</div>`;
+    });
+  }
+
+  // ── 月まとめ ──
+  html += `<div class="section-title">■ 月間まとめ</div>`;
+  html += `<div class="monthly-summary">`;
+  html += `<div class="ms-row"><span class="ms-key">対象期間</span><span class="ms-val">令和${waYear}年${m}月1日 〜 ${m}月${days}日</span></div>`;
+  html += `<div class="ms-row"><span class="ms-key">総日数</span><span class="ms-val">${days}日</span></div>`;
+  html += `<div class="ms-row"><span class="ms-key">記録済日数</span><span class="ms-val">${recordedDays}日（${unsetCount > 0 ? `未記録${unsetCount}日` : '全日記録済'}）</span></div>`;
+  html += `<div class="ms-row"><span class="ms-key">📞 電話あり</span><span class="ms-val" style="color:#dc2626;">${callCount}日　（${calls => calls}件の対応）</span></div>`.replace('${calls => calls}件', `${dayList.reduce((s,r) => s + r.calls.length, 0)}`);
+  html += `<div class="ms-row"><span class="ms-key">📵 電話なし</span><span class="ms-val" style="color:#16a34a;">${noneCount}日</span></div>`;
+  html += `<div class="ms-row"><span class="ms-key">24時間体制</span><span class="ms-val">✅ 確保（輪番制による対応）</span></div>`;
+  html += `</div>`;
+
+  // フッター
+  html += `
+  <div class="report-footer">
+    ケアプランセンター桃園　｜　特定事業所加算Ⅰ 体制確認書類　｜　令和${waYear}年${m}月分
+  </div>`;
+
+  document.getElementById('report-inner').innerHTML = html;
+}
+
+// ストレージがない環境用フォールバック
+if (typeof window.storage === 'undefined') {
+  window.storage = {
+    get: async (key, shared) => {
+      try {
+        const v = localStorage.getItem(key);
+        return v ? { value: v } : null;
+      } catch { return null; }
+    }
+  };
+}
+
+initSelects();
+render();
+</script>
+</body>
+</html>
