@@ -509,10 +509,12 @@ function renderManual(){
       <div class="manual-section-title">📋 対応フローチャート</div>
       <div class="manual-section-body">
         <div class="flow-step"><div class="flow-num">1</div><div class="flow-content"><div class="flow-title">受電・録音の告知</div><div class="flow-desc">落ち着いて挨拶し、録音中であることを伝える</div></div></div>
-        <div class="flow-step"><div class="flow-num">2</div><div class="flow-content"><div class="flow-title">基本情報の聞き取り（5W1H）</div><div class="flow-desc">誰から／誰の件で／いつから／どこで／何が起きているか</div></div></div>
-        <div class="flow-step"><div class="flow-num">3</div><div class="flow-content"><div class="flow-title">緊急性の判定</div><div class="flow-desc">下記の判断基準で「緊急」か「非緊急」かを判断する</div></div></div>
-        <div class="flow-step"><div class="flow-num">4</div><div class="flow-content"><div class="flow-title">アクションの選択</div><div class="flow-desc">【緊急】管理者に即報告→訪問看護・救急へ連絡<br>【非緊急】傾聴・安心感を提供→翌日担当者へ引継ぎ</div></div></div>
-        <div class="flow-step"><div class="flow-num">5</div><div class="flow-content"><div class="flow-title">記録・報告</div><div class="flow-desc">対応内容を24時間連絡体制記録アプリに入力。管理者へ報告済の場合は時刻も記載</div></div></div>
+        <div class="flow-step"><div class="flow-num">2</div><div class="flow-content"><div class="flow-title">お名前・続柄の確認</div><div class="flow-desc">連絡者のお名前・続柄・利用者のお名前を確認しメモする</div></div></div>
+        <div class="flow-step"><div class="flow-num" style="background:#7c3aed;">3</div><div class="flow-content"><div class="flow-title" style="color:#7c3aed;">キーパーソン（KP）の確認</div><div class="flow-desc">登録されているKPかどうかを確認する<br>【KP以外】KPへの連絡を依頼して対応終了（超緊急時を除く）<br>【KP確認】そのままSTEP4へ進む</div></div></div>
+        <div class="flow-step"><div class="flow-num">4</div><div class="flow-content"><div class="flow-title">状況の聞き取り（5W1H）</div><div class="flow-desc">いつから／どこで／何が起きているか／意識の有無を確認する</div></div></div>
+        <div class="flow-step"><div class="flow-num">5</div><div class="flow-content"><div class="flow-title">緊急性の判定</div><div class="flow-desc">下記の判断基準で「緊急」か「非緊急」かを判断する</div></div></div>
+        <div class="flow-step"><div class="flow-num">6</div><div class="flow-content"><div class="flow-title">アクションの選択</div><div class="flow-desc">【緊急】管理者に即報告→訪問看護・救急へ連絡<br>【非緊急】傾聴・安心感を提供→翌日担当者へ引継ぎ</div></div></div>
+        <div class="flow-step"><div class="flow-num">7</div><div class="flow-content"><div class="flow-title">記録・報告</div><div class="flow-desc">対応内容を24時間連絡体制記録アプリに入力。管理者へ報告済の場合は時刻も記載</div></div></div>
       </div>
     </div>
     <div class="manual-section">
@@ -520,17 +522,65 @@ function renderManual(){
       <div class="manual-section-body">
         <div class="urgency-grid">
           <div class="urgency-box red"><div class="urgency-label red">🚨 緊急</div><div class="urgency-item">▶ 意識がない・呼びかけに反応しない</div><div class="urgency-item">▶ 転倒・骨折・大量出血</div><div class="urgency-item">▶ 呼吸困難・強い痛みなど急変</div><div class="urgency-item">▶ 119番要請を求めている</div></div>
-          <div class="urgency-box green"><div class="urgency-label green">✅ 非緊急</div><div class="urgency-item">▶ 相談・不安の訴え（状態安定）</div><div class="urgency-item">▶ サービス内容・予定の確認</div><div class="urgency-item">▶ 不満・苦情の申し出</div><div class="urgency-item">▶ 翌日以降の手配依頼</div></div>
+          <div class="urgency-box green"><div class="urgency-label green">✅ 非緊急</div><div class="urgency-item">▶ 相談・不安の訴え（状態安定）</div><div class="urgency-item">▶ サービス内容・予定の確認</div><div class="urgency-item">▶ 不満・苦情の申し出</div><div class="urgency-item">▶ 翌日以降の手配依頼</div><div class="urgency-item" style="color:#7c3aed;font-weight:700;">▶ KP以外からの連絡（KPへ誘導）</div></div>
         </div>
       </div>
     </div>
     <div class="manual-section">
       <div class="manual-section-title">📞 対話スクリプト（そのまま読み上げ）</div>
       <div class="manual-section-body">
-        <div class="script-box"><div class="script-header blue">STEP 1｜電話開始</div><div class="script-body">「お電話ありがとうございます。ケアプランセンター桃園、当番の〇〇です。<br>　適切な対応のため、このお電話は録音させていただいております。<br>　どのようなご用件でしょうか？」</div></div>
-        <div class="script-box"><div class="script-header blue">STEP 2｜状況確認（メモを取りながら）</div><div class="script-body">① お名前（連絡者）：　　　　　様　続柄：<br>② 利用者のお名前：　　　　　様<br>③ いつから：　　　　頃から<br>④ 状況（何が起きているか）：<br>⑤ 今、ご本人は意識がありますか？</div></div>
-        <div class="script-box"><div class="script-header green">STEP 3-A｜非緊急の場合</div><div class="script-body green">「状況、よく分かりました。ご不安でしたね。<br>　詳細については、明日の営業開始後すぐに、担当の〇〇から改めてご連絡し、お手配させていただきます。<br>　今夜は一旦このまま様子を見ていただいて大丈夫ですよ。どうぞご安心ください。」</div></div>
-        <div class="script-box"><div class="script-header red">STEP 3-B｜緊急の場合</div><div class="script-body red">「大変な状況ですね。すぐに管理者に報告し、訪問看護ステーションとも連携を確認します。<br>　折り返しお電話しますので、そのままお待ちください。」</div><div class="script-note">※意識がない・出血がひどい場合：「すぐに119番へお電話ください」と伝える</div></div>
+
+        <div class="script-box">
+          <div class="script-header blue">STEP 1｜受電・録音の告知</div>
+          <div class="script-body">「お電話ありがとうございます。ケアプランセンター桃園、当番の〇〇です。<br>　適切な対応のため、このお電話は録音させていただいております。」</div>
+        </div>
+
+        <div class="script-box">
+          <div class="script-header blue">STEP 2｜お名前と続柄の確認（メモを取りながら）</div>
+          <div class="script-body">「恐れ入りますが、お電話いただいているのはどなた様でしょうか？<br>　お名前と、〇〇様（利用者名）とのご関係をお聞かせいただけますか？」<br><br>
+            <span style="color:#374151;font-size:11px;">
+            ✏️ 連絡者のお名前：＿＿＿＿＿＿様<br>
+            ✏️ 続柄：＿＿＿＿＿＿<br>
+            ✏️ 利用者のお名前：＿＿＿＿＿＿様
+            </span>
+          </div>
+        </div>
+
+        <div class="script-box">
+          <div class="script-header" style="background:#7c3aed;">STEP 3｜キーパーソンの確認</div>
+          <div class="script-body" style="background:#f5f3ff;">「ありがとうございます。〇〇様（続柄）でいらっしゃいますね。<br>　失礼ながら、〇〇様（利用者名）の『ご相談窓口（キーパーソン）』としてご登録いただいている方でいらっしゃいますでしょうか？」</div>
+        </div>
+
+        <div class="script-box">
+          <div class="script-header" style="background:#7c3aed;">STEP 3-A｜キーパーソンでなかった場合</div>
+          <div class="script-body" style="background:#f5f3ff;">「恐れ入ります。大切な個人情報および支援内容の整合性を守るため、当事業所では原則としてあらかじめ設定いただいたキーパーソン様を通じて情報をお伝えする決まりとなっております。<br><br>
+　お手数ですが、キーパーソンである〇〇様へご連絡いただけますでしょうか。<br>
+　キーパーソン様から私どもへ折り返しをいただくか、キーパーソン様からお話を聞いていただく形をお願いしております。」</div>
+          <div class="script-note">※生命の危険がある超緊急時のみ例外。その場合はSTEP 4へ進む</div>
+        </div>
+
+        <div class="script-box">
+          <div class="script-header blue">STEP 4｜キーパーソン確認後・状況の聞き取り</div>
+          <div class="script-body">「承知いたしました。状況をお聞かせください。」<br><br>
+            <span style="color:#374151;font-size:11px;">
+            ✏️ いつから：＿＿＿＿頃から<br>
+            ✏️ 状況（何が起きているか）：＿＿＿＿＿＿<br>
+            ✏️ ご本人の意識：あり　／　なし　／　不明
+            </span>
+          </div>
+        </div>
+
+        <div class="script-box">
+          <div class="script-header green">STEP 5-A｜非緊急の場合</div>
+          <div class="script-body green">「状況、よく分かりました。ご不安でしたね。<br>　詳細については、明日の営業開始後すぐに、担当の〇〇から改めてご連絡し、お手配させていただきます。<br>　今夜は一旦このまま様子を見ていただいて大丈夫ですよ。どうぞご安心ください。」</div>
+        </div>
+
+        <div class="script-box">
+          <div class="script-header red">STEP 5-B｜緊急の場合</div>
+          <div class="script-body red">「大変な状況ですね。すぐに管理者に報告し、訪問看護ステーションとも連携を確認します。<br>　折り返しお電話しますので、そのままお待ちください。」</div>
+          <div class="script-note">※意識がない・出血がひどい場合：「すぐに119番へお電話ください」と伝える</div>
+        </div>
+
       </div>
     </div>
     <div class="manual-section">
@@ -538,6 +588,7 @@ function renderManual(){
       <div class="manual-section-body">
         <div class="checklist-item"><div class="check-box">□</div><div class="check-label">連絡者のお名前と続柄を確認した</div><div class="check-tag required">必須</div></div>
         <div class="checklist-item"><div class="check-box">□</div><div class="check-label">利用者のお名前を確認した</div><div class="check-tag required">必須</div></div>
+        <div class="checklist-item"><div class="check-box" style="border-color:#7c3aed;color:#7c3aed;">□</div><div class="check-label">キーパーソン（KP）かどうかを確認した<br><span style="font-size:10px;color:#7c3aed;">※KP以外の場合はKPへの連絡を依頼（超緊急時を除く）</span></div><div class="check-tag" style="background:#f5f3ff;color:#7c3aed;">KP確認</div></div>
         <div class="checklist-item"><div class="check-box">□</div><div class="check-label">いつから・どこで・何が起きているか確認した</div><div class="check-tag required">必須</div></div>
         <div class="checklist-item"><div class="check-box">□</div><div class="check-label">ご本人の意識・状態を確認した</div><div class="check-tag required">必須</div></div>
         <div class="checklist-item"><div class="check-box">□</div><div class="check-label">緊急性を判断した（緊急 or 非緊急）</div><div class="check-tag important">最重要</div></div>
@@ -546,6 +597,29 @@ function renderManual(){
         <div class="checklist-item"><div class="check-box">□</div><div class="check-label">翌日担当者への引継ぎを行った</div><div class="check-tag normal">引継ぎ</div></div>
       </div>
     </div>
+    <div class="manual-section">
+      <div class="manual-section-title" style="background:#fdf2f8;border-left-color:#7c3aed;">🔑 情報開示の原則（キーパーソン一本化）</div>
+      <div class="manual-section-body">
+        <div style="padding:12px;">
+          <div style="font-size:12px;font-weight:800;color:#7c3aed;margin-bottom:8px;">⚠️ 徹底すべきポイント</div>
+          <div style="background:#fef9ff;border:1.5px solid #e9d5ff;border-radius:10px;overflow:hidden;">
+            <div style="display:flex;align-items:flex-start;gap:8px;padding:9px 12px;border-bottom:1px solid #e9d5ff;">
+              <div style="font-size:14px;flex-shrink:0;">🛡️</div>
+              <div><div style="font-size:11px;font-weight:800;color:#5b21b6;margin-bottom:2px;">「言った・言わない」の回避</div><div style="font-size:11px;color:#64748b;line-height:1.6;">親族間でも意見が分かれることがあるため、窓口を絞ることは職員自身を守ることにも繋がります。具体的な会話例は下記スクリプトをご参照ください。</div></div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:8px;padding:9px 12px;border-bottom:1px solid #e9d5ff;">
+              <div style="font-size:14px;flex-shrink:0;">📋</div>
+              <div><div style="font-size:11px;font-weight:800;color:#5b21b6;margin-bottom:2px;">情報の統一</div><div style="font-size:11px;color:#64748b;line-height:1.6;">複数の親族に別々の説明をしてしまうと、後で大きなクレームに発展するリスクがあります。</div></div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:8px;padding:9px 12px;">
+              <div style="font-size:14px;flex-shrink:0;">🚨</div>
+              <div><div style="font-size:11px;font-weight:800;color:#dc2626;margin-bottom:2px;">緊急時の例外</div><div style="font-size:11px;color:#64748b;line-height:1.6;">生命の危険があるなどの超緊急事態を除き、原則はこの「一本化」を徹底します。</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="manual-section">
       <div class="manual-section-title">📋 運用上のポイント（集団指導準拠）</div>
       <div class="manual-section-body">
