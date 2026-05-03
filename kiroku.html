@@ -566,7 +566,7 @@ function renderManual(){
         <div class="contact-row"><div class="contact-label">MV清納</div><div class="contact-value">093-663-0066</div><a href="tel:0936630066"><button class="contact-call-btn">📞 発信</button></a></div>
         <div class="contact-row"><div class="contact-label">訪問看護ST千代ケ崎</div><div class="contact-value">080-2780-0735</div><a href="tel:08027800735"><button class="contact-call-btn">📞 発信</button></a></div>
         <div class="contact-row"><div class="contact-label">訪問看護ST清納</div><div class="contact-value">080-2706-3899</div><a href="tel:08027063899"><button class="contact-call-btn">📞 発信</button></a></div>
-        <div class="contact-row"><div class="contact-label">訪問看護ST陣山&スィート</div><div class="contact-value">080-1712-3086</div><a href="tel:08017123086"><button class="contact-call-btn">📞 発信</button></a></div>
+        <div class="contact-row"><div class="contact-label">訪問看護ST陣山&スイート</div><div class="contact-value">080-1712-3086</div><a href="tel:08017123086"><button class="contact-call-btn">📞 発信</button></a></div>
         <div class="contact-row"><div class="contact-label">救急</div><div class="contact-value">119番</div><a href="tel:119"><button class="contact-call-btn">📞 発信</button></a></div>
         <div class="contact-row"><div class="contact-label">警察</div><div class="contact-value">110番</div><a href="tel:110"><button class="contact-call-btn">📞 発信</button></a></div>
       </div>
@@ -708,7 +708,7 @@ function renderRecordModal(m){
       <div class="modal-handle"></div>
       <div class="modal-title">${m.isNew?'📞 対応記録を追加':'✏️ 対応記録を編集'}</div>
       <div class="modal-label">対応時刻 *</div>
-      <input type="time" class="modal-input" id="rec-time" value="${r.time||''}">
+      <input type="text" class="modal-input" id="rec-time" placeholder="例：21:30" value="${r.time||''}">
       <div class="modal-label">対応担当者 *</div>
       <select class="modal-select" id="rec-staff">
         ${state.staff.map(s=>`<option value="${s}" ${r.staff===s?'selected':''}>${s}</option>`).join("")}
@@ -890,7 +890,7 @@ function bindMain(){
 function bindCalendar(app){
   app.querySelectorAll('[data-action="toggle-day"]').forEach(el=>{el.addEventListener('click',()=>{const dk=el.dataset.dk;state.openDays[dk]=!state.openDays[dk];render();});});
   app.querySelectorAll('[data-call]').forEach(btn=>{btn.addEventListener('click',e=>{e.stopPropagation();const dk=btn.dataset.dk;const val=btn.dataset.call==='true';const dd=getDayData(dk);state.data[dk]={...dd,hasCall:val};if(val)state.openDays[dk]=true;saveData();render();});});
-  app.querySelectorAll('[data-action="duty"]').forEach(sel=>{sel.addEventListener('change',e=>{e.stopPropagation();const dk=sel.dataset.dk;const dd=getDayData(dk);state.data[dk]={...dd,dutyStaff:sel.value};saveData();render();});});
+  app.querySelectorAll('[data-action="duty"]').forEach(sel=>{sel.addEventListener('change',e=>{e.stopPropagation();const dk=sel.dataset.dk;const dd=getDayData(dk);state.data[dk]={...dd,dutyStaff:sel.value};saveData();});});
   app.querySelectorAll('[data-action="add-rec"]').forEach(btn=>{btn.addEventListener('click',()=>{state.modal={type:'record',dk:btn.dataset.dk,isNew:true,record:{time:'',staff:state.staff[0]||'',content:'',contentFree:'',response:'',responseFree:'',memo:''}};render();});});
   app.querySelectorAll('[data-action="edit-rec"]').forEach(btn=>{btn.addEventListener('click',()=>{const dk=btn.dataset.dk;const rid=parseInt(btn.dataset.rid);const rec=(getDayData(dk).records||[]).find(r=>r.id===rid);if(rec){state.modal={type:'record',dk,isNew:false,record:{...rec}};render();}});});
   app.querySelectorAll('[data-action="del-rec"]').forEach(btn=>{btn.addEventListener('click',()=>{if(!confirm('削除しますか？'))return;const dk=btn.dataset.dk;const rid=parseInt(btn.dataset.rid);const dd=getDayData(dk);state.data[dk]={...dd,records:(dd.records||[]).filter(r=>r.id!==rid)};saveData();showToast('記録を削除しました');render();});});
@@ -919,8 +919,8 @@ function bindModal(app){
   if(m.type==='record'){
     const contentSel=document.getElementById('rec-content');
     const responseSel=document.getElementById('rec-response');
-    if(contentSel)contentSel.addEventListener('change',()=>{m.record.content=contentSel.value;render();});
-    if(responseSel)responseSel.addEventListener('change',()=>{m.record.response=responseSel.value;render();});
+    if(contentSel)contentSel.addEventListener('change',()=>{m.record.content=contentSel.value;});
+    if(responseSel)responseSel.addEventListener('change',()=>{m.record.response=responseSel.value;});
     const saveBtn=document.getElementById('rec-save');
     if(saveBtn)saveBtn.addEventListener('click',()=>{
       const time=document.getElementById('rec-time')?.value||'';
@@ -934,7 +934,7 @@ function bindModal(app){
       const dk=m.dk;const dd=getDayData(dk);let recs=[...(dd.records||[])];
       if(m.isNew){recs.push({id:Date.now(),time,staff,content,contentFree,response,responseFree,memo,createdBy:state.userName,createdAt:fmtNow()});}
       else{recs=recs.map(r=>r.id===m.record.id?{...r,time,staff,content,contentFree,response,responseFree,memo,updatedBy:state.userName,updatedAt:fmtNow()}:r);}
-      state.data[dk]={...dd,records:recs,hasCall:true};saveData();state.modal=null;showToast(m.isNew?'記録を追加しました':'記録を更新しました');render();
+      const keepDuty=state.data[dk]?.dutyStaff||dd.dutyStaff||'';state.data[dk]={...dd,dutyStaff:keepDuty,records:recs,hasCall:true};saveData();state.modal=null;showToast(m.isNew?'記録を追加しました':'記録を更新しました');render();
     });
     const cancelBtn=document.getElementById('rec-cancel');
     if(cancelBtn)cancelBtn.addEventListener('click',()=>{state.modal=null;render();});
